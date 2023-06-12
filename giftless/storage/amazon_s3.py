@@ -85,7 +85,7 @@ class AmazonS3Storage(StreamingStorage, ExternalStorage):
 
         if filename and disposition:
             filename = safe_filename(filename)
-            params['ResponseContentDisposition'] = f'attachment; filename="{filename}"'
+            params['ResponseContentDisposition'] = f'{disposition}; filename="{filename}"'
         elif disposition:
             params['ResponseContentDisposition'] = disposition
 

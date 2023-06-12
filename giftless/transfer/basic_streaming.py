@@ -83,11 +83,11 @@ class ObjectsView(BaseView):
 
         filename = request.args.get('filename')
         filename = safe_filename(filename)
-        disposition = request.args.get('disposition')
+        disposition = request.args.get('disposition', 'attachment')
 
         headers = {}
         if filename and disposition:
-            headers = {'Content-Disposition': f'attachment; filename="{filename}"'}
+            headers = {'Content-Disposition': f'{disposition}; filename="{filename}"'}
         elif disposition:
             headers = {'Content-Disposition': disposition}
 
@@ -159,9 +159,10 @@ class BasicStreamingTransferAdapter(PreAuthorizingTransferAdapter, ViewProvider)
             download_url = ObjectsView.get_storage_url('get', organization, repo, oid)
             preauth_url = self._preauth_url(download_url, organization, repo, actions={'read'}, oid=oid)
 
-            if extra and 'filename' in extra:
-                params = {'filename': extra['filename']}
-                preauth_url = add_query_params(preauth_url, params)
+            if extra:
+                for key in ('filename', 'disposition'):
+                    if key in extra:
+                        preauth_url = add_query_params(preauth_url, {key: extra[key]})
 
             response['actions'] = {
                 "download": {
