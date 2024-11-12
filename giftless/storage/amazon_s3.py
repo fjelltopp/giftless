@@ -5,7 +5,7 @@ import boto3  # type: ignore
 import botocore  # type: ignore
 
 from giftless.storage import ExternalStorage, StreamingStorage
-from giftless.storage.exc import ObjectNotFound
+from giftless.storage.exc import ObjectNotFound, AccessDenied
 from giftless.util import safe_filename
 
 
