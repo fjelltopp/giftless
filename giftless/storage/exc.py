@@ -19,3 +19,7 @@ class ObjectNotFound(StorageError):
 
 class InvalidObject(StorageError):
     code = 422
+
+
+class AccessDenied(StorageError):
+    code = 403
