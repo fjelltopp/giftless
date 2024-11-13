@@ -2,6 +2,7 @@
 
 See https://github.com/git-lfs/git-lfs/blob/master/docs/api/batch.md#response-errors
 """
+import logging
 from werkzeug.exceptions import default_exceptions
 
 from .representation import output_git_lfs_json
@@ -26,14 +27,16 @@ class ApiErrorHandler:
         """Handle errors by returning a JSON response
         only maps HTTP-based exceptions from werkzeug.exceptions (like NotFound or Forbidden)
         """
+        log = logging.getLogger(__name__)
         code = ex.code if hasattr(ex, 'code') else 500
         data = {"message": str(ex)}
-        logging.debug(f"Returning error response: {data} with status {code}")
+        log.debug(f"Returning error response: {data} with status {code}")
 
         return output_git_lfs_json(data=data, code=code)
 
     @classmethod
     def access_denied_as_json(cls, ex):
         """Handle AccessDenied by returning a JSON response with 403 status"""
+
         data = ex.as_dict()
         return output_git_lfs_json(data=data, code=403)
