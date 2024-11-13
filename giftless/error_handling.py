@@ -38,6 +38,7 @@ class ApiErrorHandler:
     @classmethod
     def access_denied_as_json(cls, ex):
         """Handle AccessDenied by returning a JSON response with 403 status"""
-
+        log = logging.getLogger(__name__)
+        log.debug(f"Returning error response of AccessDenied with status 403")
         data = ex.as_dict()
         return output_git_lfs_json(data=data, code=403)
