@@ -55,7 +55,7 @@ class AmazonS3Storage(StreamingStorage, ExternalStorage):
             if e.response['Error']['Code'] == "404":
                 raise ObjectNotFound()
             elif e.response['Error']['Code'] in ("403", "AccessDenied"):
-               raise AccessDenied()
+                raise AccessDenied()
             else:
                 raise e
         return result
