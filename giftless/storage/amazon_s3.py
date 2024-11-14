@@ -5,7 +5,7 @@ import boto3  # type: ignore
 import botocore  # type: ignore
 
 from giftless.storage import ExternalStorage, StreamingStorage
-from giftless.storage.exc import ObjectNotFound
+from giftless.storage.exc import AccessDenied, ObjectNotFound
 from giftless.util import safe_filename
 
 
@@ -22,7 +22,13 @@ class AmazonS3Storage(StreamingStorage, ExternalStorage):
     def get(self, prefix: str, oid: str) -> Iterable[bytes]:
         if not self.exists(prefix, oid):
             raise ObjectNotFound()
-        result: Iterable[bytes] = self._s3_object(prefix, oid).get()['Body']
+        try:
+            result: Iterable[bytes] = self._s3_object(prefix, oid).get()['Body']
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] in ("403", "AccessDenied"):
+                raise AccessDenied()
+            else:
+                raise e
         return result
 
     def put(self, prefix: str, oid: str, data_stream: BinaryIO) -> int:
@@ -38,7 +44,7 @@ class AmazonS3Storage(StreamingStorage, ExternalStorage):
     def exists(self, prefix: str, oid: str) -> bool:
         try:
             self.get_size(prefix, oid)
-        except ObjectNotFound:
+        except (ObjectNotFound, AccessDenied):
             return False
         return True
 
@@ -48,6 +54,8 @@ class AmazonS3Storage(StreamingStorage, ExternalStorage):
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == "404":
                 raise ObjectNotFound()
+            elif e.response['Error']['Code'] in ("403", "AccessDenied"):
+                raise AccessDenied()
             else:
                 raise e
         return result
